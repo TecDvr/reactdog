@@ -1,0 +1,42 @@
+version: "3"
+services:
+  ddagent:
+    image: datadog/agent:latest
+    container_name: datadog-agent-react
+    environment:
+      - DD_APM_ENABLED=true
+      - DD_API_KEY=<YOURAPIKEY>
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_APM_ANALYZED_SPANS=node-app-v2|express.request=1
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_AC_EXCLUDE=name:datadog-agent-react
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    ports:
+      - "8126:8126"
+    restart: on-failure
+  nodedog:
+    image: zachgw/nodedog:v1
+    container_name: nodedog
+    environment: 
+      - APIKEY=<YOURAPIKEY>
+      - DD_AGENT_HOST=datadog-agent-react
+      - DD_TRACE_AGENT_PORT=8126
+    ports:
+      - "5000:5000"
+    restart: on-failure
+  reactdog:
+    image: zachgw/reactdog:v2
+    container_name: reactdog
+    environment: 
+      - REACT_APP_APPID=<YOURAPPID>
+      - REACT_APP_CLITOKEN=<YOURCLIENTTOKEN>
+    ports:
+      - "3000:3000"
+    restart: on-failure
+    tty: true
+
+
